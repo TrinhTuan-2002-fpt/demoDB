@@ -28,6 +28,11 @@ const DataPass = {
         email: "mchemistry95@gmail.com",
         password: "Password1"
     },
+    AccountUpdate:{
+        name: faker.name.findName(),
+        email: faker.internet.email()
+    },
+    PassUpdate: faker.internet.password(8, undefined, undefined,'1'),
     LoginUser: {
         name: faker.name.findName(),
         email: faker.internet.email(),
