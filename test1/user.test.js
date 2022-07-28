@@ -39,11 +39,6 @@ describe('TEST USER FUNCTION  ', () => {
                 expect(res.statusCode).toBe(401);
             });
             
-            test('Post User Fail Password', async () => {
-                const res = await request(server).post(KeyTest.config.User).send('Authorization', `Bearer ${KeyTest.Null}`);
-                expect(res.statusCode).toBe(401);
-            });
-
             test('Post User Fail Email special characters ', async () => {
                 const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${token}`)
                 .send(KeyTest.Null);

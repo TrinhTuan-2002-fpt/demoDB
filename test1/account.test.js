@@ -8,13 +8,11 @@ let token,id,managertoken;
 // Connects to database before running tests
 beforeAll(async () => {
     await mongoose.connect(config.getDBUri(), config.DB.CONFIGS);
-    console.log(KeyTest.DataPass); //
     await request(server).post(KeyTest.config.Auth.Register).send(KeyTest.DataPass.LoginUser);
     const res = await request(server).post(KeyTest.config.Auth.Login).send({
         email: KeyTest.DataPass.LoginUser.email,
         password: KeyTest.DataPass.LoginUser.password
     });
-    console.log(res.body);
     token = res.body.token.access.token;
     id = res.body.user._id;
 });
@@ -28,14 +26,11 @@ describe('ACCOUNT TEST FUNCTION', () => {
         test('Get Account fail Role Admin or Manager',async () => {
             const admin = await request(server).post(KeyTest.config.Auth.Login).send(KeyTest.DataPass.LoginFUllRoles);
             const postuser = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${admin.body.token.access.token}`).send(KeyTest.DataPass.User);
-            console.log(KeyTest.DataPass.User);
-            console.log(postuser.body);
             const LoginUser = await request(server).post(KeyTest.config.Auth.Login).send({
                 email: KeyTest.DataPass.User.email,
                 password: KeyTest.DataPass.User.password
             });
             console.log(LoginUser.body);
-            managertoken = LoginUser.body.token.access.token;
             const res = await request(server).get(KeyTest.config.Account).set('Authorization', `Bearer ${LoginUser.body.token.access.token}`);
             expect(res.statusCode).toBe(403);
         });
@@ -49,7 +44,8 @@ describe('ACCOUNT TEST FUNCTION', () => {
             expect(res.statusCode).toBe(200);
         });
     });
-        describe('Path Account',() => {
+    describe('Path',() => {
+        describe('Account',() => {
             test('Path Account Fail Role wrong ',async () => {
                 const res = await request(server).patch(KeyTest.config.Account).set('Authorization', `Bearer ${managertoken}`)
                 .send(KeyTest.DataPass.AccountUpdate);
@@ -75,51 +71,36 @@ describe('ACCOUNT TEST FUNCTION', () => {
                 });
                 expect(res.statusCode).toBe(400);
             });
-            
-            test('Path Account Password fail', async () => {
-
-            });
-            test('Path Account Password Fail Role wrong ',async () => {
-                const res = await request(server).patch(KeyTest.config.AccPass).set('Authorization', `Bearer ${managertoken}`)
-                .send(KeyTest.DataPass.AccountUpdate);
-                expect(res.statusCode).toBe(403);
-            }); 
-            test('Path Account Password fail Null token', async () => {
-                const res = await request(server).patch(KeyTest.config.AccPass);
-                expect(res.statusCode).toBe(401);
-            });
-            test('Path Account Password fail currentPassword wrong', async () => {
-                const res = await request(server).patch(KeyTest.config.AccPass).set('Authorization', `Bearer ${token}`)
-                .send({
-                    currentPassword: KeyTest.DataPass.PassUpdate,
-                    newPassword: KeyTest.DataPass.PassUpdate
-                });
-                expect(res.statusCode).toBe(401);
-            });
-            test('Path Account Password fail newPassword wrong', async () => {
-                const res = await request(server).patch(KeyTest.config.AccPass).set('Authorization', `Bearer ${token}`)
-                .send({
-                    currentPassword: KeyTest.DataPass.PassUpdate,
-                    newPassword: KeyTest.DataFail.Password.lessthaneight
-                });
-                expect(res.statusCode).toBe(400);
-            });
             test('Path Account Pass ',async () => {
                 const res = await request(server).patch(KeyTest.config.Account).set('Authorization', `Bearer ${token}`)
                 .send(KeyTest.DataPass.AccountUpdate);
                 expect(res.statusCode).toBe(200);
-            }); 
-            test('Path Account Password Pass ',async () => {
-                const res = await request(server).patch(KeyTest.config.AccPass).set('Authorization', `Bearer ${token}`)
-                .send({
-                    currentPassword: KeyTest.DataPass.LoginUser.password,
-                    newPassword: KeyTest.DataPass.PassUpdate
-                });
-                expect(res.statusCode).toBe(204);
             }); 
             test('delete user ',async () => {
                 const res = await request(server).delete(`${KeyTest.config.User}/${id}`).set('Authorization', `Bearer ${token}`);
                 expect(res.statusCode).toBe(204);
             }); 
         });
+        // describe('Password Account',() => {
+            
+        //     test('',() => {
+
+        //     }); 
+        // });
+    });
+    // describe('',() => {
+    //     describe('',() => {
+    //         test('',() => {
+
+    //         }); 
+    //     });
+    //     describe('',() => {
+    //         test('',() => {
+
+    //         }); 
+    //         test('',() => {
+
+    //         }); 
+    //     });
+    // });
 })

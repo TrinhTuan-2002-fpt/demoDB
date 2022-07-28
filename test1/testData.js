@@ -1,5 +1,4 @@
 const { faker } = require('@faker-js/faker/locale/vi');
-const { Map } = require('../src/models');
 var mongoose = require('mongoose');
 const Ip = ['1.2.3.4.5','1234.1234','257.258.269.299','1995.-4.-5.9','A.1.2.3','1@3,5.6','1.27.2..','ipvtv'];
 const status = ['Draft', 'Release'];
@@ -22,8 +21,7 @@ const config = {
     Maps: '/v1/maps',
     Location: '/v1/locations',
     Car: '/v1/cars',
-    Account: '/v1/account/',
-    AccPass: '/v1/account/password'
+    Account: '/v1/account/'
 }
 const DataPass = {
     LoginFUllRoles: {
@@ -77,52 +75,11 @@ const DataPass = {
             lat: faker.address.latitude(),
             lng: faker.address.longitude()
         }
-    },
-    MapLocation:{
-        status: status[Math.floor(Math.random() * status.length)],
-        name: faker.address.city(),
-        northEastBound: {
-            lat: faker.address.latitude(),
-            lng: faker.address.longitude()
-        },
-        southWestBound: {
-            lat: faker.address.latitude(),
-            lng: faker.address.longitude()
-        }
-    },
-    MapUpdate:{
-        status: status[Math.floor(Math.random() * status.length)],
-        name: faker.address.city(),
-        northEastBound: {
-            lat: faker.address.latitude(),
-            lng: faker.address.longitude()
-        },
-        southWestBound: {
-            lat: faker.address.latitude(),
-            lng: faker.address.longitude()
-        }
-    },
-    Location:{
-        status: status[Math.floor(Math.random() * status.length)],
-        title: 'Bến ' + Math.floor(Math.random() * 10),
-        lat: faker.address.latitude(),
-        lng: faker.address.longitude(),
-        alt: Math.random(),
-        type: types[Math.floor(Math.random() * types.length)]
-    },
-    LocationUpdate:{
-        status: status[Math.floor(Math.random() * status.length)],
-        title: 'Bến ' + Math.floor(Math.random() * 10),
-        lat: faker.address.latitude(),
-        lng: faker.address.longitude(),
-        alt: Math.random(),
-        type: types[Math.floor(Math.random() * types.length)],
-        description: 'Bến '+ Math.floor(Math.random() * 10) + ' ngược'
     }
 }
 const DataFail = {
     ID: mongoose.Types.ObjectId().toString(),
-    Emoji: faker.internet.emoji(),
+    Emoji: '🥲',
     Null: null,
     ip: Ip[Math.floor(Math.random() * Ip.length)],
     Status: 'editor',
@@ -131,11 +88,6 @@ const DataFail = {
         NameNumber: faker.phone.number(),
         NameSpace: 'Tuan 123',
         NameUnicode: 'U+0048',
-    },
-    Password: {
-        specialChars: faker.internet.password(7) + "$",
-        lessthaneight: faker.internet.password(7),
-        space: faker.internet.password(7) + ' ' 
     },
     Email: {
         EmailNullDomain: 'tuan123@gmail',
@@ -146,11 +98,12 @@ const DataFail = {
         EmailBracket: '[tuan123]@gmail.com',
     },
     Map:{
-        LatString: 'lat' + faker.address.latitude(),
-        LngString: 'lng' + faker.address.longitude(),
-        alt: 'alt' + Math.random()
+        status: 'editor',
+        LatString: 'sh' + faker.address.latitude(),
+        LngString: 'sh' + faker.address.longitude(),
     }
 }
+
 module.exports = {
     config,
     DataPass,

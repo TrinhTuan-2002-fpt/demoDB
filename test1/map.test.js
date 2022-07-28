@@ -3,15 +3,11 @@ const mongoose = require('mongoose');
 const { server } = require('../src/app');
 const config = require('../src/config/config');
 const KeyTest = require('./testData');
-const { Map } = require('../src/models');
 
 let token, id,tokenMap;
-let lstLocation = [];
+
 beforeAll(async () => {
     await mongoose.connect(config.getDBUri(), config.DB.CONFIGS);
-    await (await Location.find({})).forEach(x => {
-        lstLocation.push(x._id.toString());
-    });
     const res = await request(server).post(KeyTest.config.Auth.Login).send(KeyTest.DataPass.LoginFUllRoles);
     token = res.body.token.access.token;
 });
@@ -123,7 +119,12 @@ describe('TEST MAP FUNCTION', () => {
                 .send(KeyTest.DataPass.Map);
                 expect(res.statusCode).toBe(400);
             });
-            test('Post Car Role user ',async () => {
+            test('Post Car Role map',async () => {
+                await request(server).post(KeyTest.config.Car).send({
+                    name: KeyTest.DataPass.LoginUser.name,
+                    email: KeyTest.DataPass.LoginUser.email,
+                    password: KeyTest.DataPass.LoginUser.password
+                });
                 const UserLogin = await request(server).post(KeyTest.config.Auth.Login).send({
                     email: KeyTest.DataPass.LoginUser.email,
                     password: KeyTest.DataPass.LoginUser.password
@@ -135,69 +136,67 @@ describe('TEST MAP FUNCTION', () => {
             });
         });
         describe('Post Map Pass', () => {
-            test('Post Map test delete', async() => {
-                console.log(KeyTest.DataPass.Map);
-                const res = await request(server).post(KeyTest.config.Maps).set('Authorization', `Bearer ${token}`)
+            test('Post Map', async() => {
+                const res = await request(server).post(KeyTest.config.Auth.Register).set('Authorization', `Bearer ${token}`)
                 .send(KeyTest.DataPass.Map);
-                id = res.body._id;
-                console.log(id);
                 expect(res.statusCode).toBe(201);
-            });
-            test('Post Map test Location', async() => {
-                const res = await request(server).post(KeyTest.config.Maps).set('Authorization', `Bearer ${token}`)
-                .send(KeyTest.DataPass.MapLocation);
-                expect(res.statusCode).toBe(201)
             });
         });
     });
-    describe('Get Map function', () => {
-        test('Get Map All return json ',async () => {
-            const res = await request(server).get(KeyTest.config.Maps);
-            expect(res.type).toBe('application/json');
+    describe('Get Map function', async() => {
+        describe('GEt Map All', () => {
+            test('Get Map All return json ',async () => {
+                const res = await request(server).get(KeyTest.config.Maps);
+                expect(res.type).toBe('application/json');
+            });
         });
-        test('Get Map Fail wrong Id ',async () => {
-            const res = await request(server).get(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`);
-            expect(res.statusCode).toBe(200);
-        });
-        test('Path Map Fail wrong Id ',async () => {
-            const res = await request(server).get(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`);
-            expect(res.statusCode).toBe(200);
+
+        describe('GEt Map ID', () => {
+            describe('GEt Map ID Fail', () => {
+                test('Get Map Fail wrong Id ',async () => {
+                    const res = await request(server).get(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`);
+                    expect(res.statusCode).toBe(200);
+                });
+            });
+            describe('GEt Map ID Pass', () => {
+                test('Path Map Fail wrong Id ',async () => {
+                    const res = await request(server).get(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`);
+                    expect(res.statusCode).toBe(200);
+                });
+            });
         });
     });
     describe('Path Map function', () => {
-        test('Path Map Pass location ', async () => {
+        test('Path Map Pass', async () => {
             const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
-                .send({...KeyTest.DataPass.Map,...{locations: null}});
-            expect(res.statusCode).toBe(401);
-        });
-        test('Path Map Pass location null', async () => {
-            const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
-                .send({...KeyTest.DataPass.Map,...{locations: null}});
-            expect(res.statusCode).toBe(401);
-        });
-        test('Path Map Pass location exist', async () => {
-            const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
-                .send({...KeyTest.DataPass.Map,...{locations: lstLocation[Math.floor(Math.random() * lstLocation.length)]}});
+                .send(KeyTest.DataPass.MapUpdate);
             expect(res.statusCode).toBe(200);
         });
-        // test('Path Map Fail Email exist in DB', async () => {
-        //     const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
-        //         .send(KeyTest.DataPass.Map);
-        //     expect(res.statusCode).toBe(400);
-        // });
-        test('Path Map Fail No login', async () => {
-            const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).send(KeyTest.DataPass.MapUpdate);
-            expect(res.statusCode).toBe(401);
-        });
-        test('Path Map Fail Role other Manager', async () => {
-            const res = await request(server).patch(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${tokenMap}`)
-                .send(KeyTest.DataPass.MapUpdate);
-            expect(res.statusCode).toBe(403);
-        });
-        test('Path Map Fail wrong Id', async () => {
-            const res = await request(server).patch(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${token}`)
-                .send(KeyTest.DataPass.MapUpdate);
-            expect(res.statusCode).toBe(404);
+        describe('Path Fail',() =>{
+            test('Path Map Fail ', async () => {
+                const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
+                    .send(KeyTest.DataPass.MapUpdate);
+                expect(res.statusCode).toBe(200);
+            });
+            // test('Path Map Fail Email exist in DB', async () => {
+            //     const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
+            //         .send(KeyTest.DataPass.Map);
+            //     expect(res.statusCode).toBe(400);
+            // });
+            test('Path Map Fail No login', async () => {
+                const res = await request(server).patch(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`).send(KeyTest.DataPass.MapUpdate);
+                expect(res.statusCode).toBe(404);
+            });
+            test('Path Map Fail Role other Manager', async () => {
+                const res = await request(server).patch(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${tokenMap}`)
+                    .send(KeyTest.DataPass.MapUpdate);
+                expect(res.statusCode).toBe(403);
+            });
+            test('Path Map Fail wrong Id', async () => {
+                const res = await request(server).patch(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${token}`)
+                    .send(KeyTest.DataPass.MapUpdate);
+                expect(res.statusCode).toBe(404);
+            });
         });
     });
     describe('Delete Map function', () =>{

@@ -72,8 +72,6 @@ const data1 = {
       
   }
 }
-console.log(data1);
-
 
 describe('test map',() => {
     test('adds 1 + 2 to equal 3',async () => {
