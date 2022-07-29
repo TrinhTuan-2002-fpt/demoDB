@@ -18,76 +18,78 @@ afterAll(async () => {
 
 describe('TEST USER FUNCTION  ', () => {
     describe('Post User function', () => {
-        describe('Post User Pass', () => {
-            test('Post User Pass ', async () => {
-                const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${token}`).send(KeyTest.DataPass.User);
-                id = res.body._id;
-                console.log(res.body);
-                expect(res.statusCode).toBe(201);
+        test('Post User Pass ', async () => {
+            const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${token}`).send({
+                name: KeyTest.DataPass.User.name,   
+                email: KeyTest.DataPass.User.email,
+                password: KeyTest.DataPass.User.password,
+                roles: ['manager']
             });
+            id = res.body._id;
+            console.log(res.body);
+            expect(res.statusCode).toBe(201);
+        });
+        test('Post User Fail Send Null ', async () => {
+            const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${token}`)
+            .send(KeyTest.Null);
+            expect(res.statusCode).toBe(400);
         });
 
-        describe('Post User Fail', () => {
-            test('Post User Fail Send Null ', async () => {
-                const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${token}`)
-                .send(KeyTest.Null);
-                expect(res.statusCode).toBe(400);
-            });
+        test('Post User Fail Send Null token', async () => {
+            const res = await request(server).post(KeyTest.config.User).send(KeyTest.DataPass.User);
+            expect(res.statusCode).toBe(401);
+        });
+        
+        test('Post User Fail Password wrong', async () => {
+            const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${token}`)
+            .send({
+                name: KeyTest.DataPass.User.name,
+                email:KeyTest.DataPass.LoginUser.email ,
+                password: KeyTest.DataFail.Password.lessthaneight,
+                roles: KeyTest.DataPass.User.roles
+            })
+            expect(res.statusCode).toBe(400);
+        });
 
-            test('Post User Fail Send Null token', async () => {
-                const res = await request(server).post(KeyTest.config.User).send('Authorization', `Bearer ${KeyTest.Null}`);
-                expect(res.statusCode).toBe(401);
-            });
-            
-            test('Post User Fail Password', async () => {
-                const res = await request(server).post(KeyTest.config.User).send('Authorization', `Bearer ${KeyTest.Null}`);
-                expect(res.statusCode).toBe(401);
-            });
+        test('Post User Fail Email special characters ', async () => {
+            const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${token}`)
+            .send(KeyTest.Null);
+            expect(res.statusCode).toBe(400);
+        });
 
-            test('Post User Fail Email special characters ', async () => {
-                const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${token}`)
-                .send(KeyTest.Null);
-                expect(res.statusCode).toBe(400);
+        test('Post User Fail Roles User or Manger', async () => {
+            await request(server).post(KeyTest.config.Auth.Register).send({
+                name: KeyTest.DataPass.LoginUser.name,
+                email: KeyTest.DataPass.LoginUser.email,
+                password: KeyTest.DataPass.LoginUser.password
             });
-            describe('roles', () => {
-                test('Post User Fail Roles User or Manger', async () => {
-                    const register = await request(server).post(KeyTest.config.Auth.Register).send({
-                        name: KeyTest.DataPass.LoginUser.name,
-                        email: KeyTest.DataPass.LoginUser.email,
-                        password: KeyTest.DataPass.LoginUser.password
-                    });
-                    const UserLogin = await request(server).post(KeyTest.config.Auth.Login).send({
-                        email: KeyTest.DataPass.LoginUser.email,
-                        password: KeyTest.DataPass.LoginUser.password
-                    });
-                    tokenUser = UserLogin.body.token.access.token;
-                    const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${UserLogin.body.token.access.token}`)
-                    .send(KeyTest.DataPass.User);
-                    expect(res.statusCode).toBe(403);
-                });
+            const UserLogin = await request(server).post(KeyTest.config.Auth.Login).send({
+                email: KeyTest.DataPass.LoginUser.email,
+                password: KeyTest.DataPass.LoginUser.password
             });
+            tokenUser = UserLogin.body.token.access.token;
+            const res = await request(server).post(KeyTest.config.User).set('Authorization', `Bearer ${UserLogin.body.token.access.token}`)
+            .send(KeyTest.DataPass.User);
+            expect(res.statusCode).toBe(403);
         });
     });
     describe('Get User function', () => {
         describe('GEt User All', () => {
             test('Get User All return json ',async () => {
-                const res = await request(server).get(KeyTest.config.User);
+                const res = await request(server).get(KeyTest.config.User).set('Authorization', `Bearer ${token}`);
                 expect(res.type).toBe('application/json');
+                expect(res.status).toBe(200);
             });
         });
 
         describe('GEt User ID', () => {
-            describe('GEt User ID Fail', () => {
-                test('Get User Fail wrong Id ',async () => {
-                    const res = await request(server).get(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`);
-                    expect(res.statusCode).toBe(200);
-                });
+            test('Get User Fail wrong Id ',async () => {
+                const res = await request(server).get(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${token}`);
+                expect(res.statusCode).toBe(404);
             });
-            describe('GEt User ID Pass', () => {
-                test('Path User Fail wrong Id ',async () => {
-                    const res = await request(server).get(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`);
-                    expect(res.statusCode).toBe(200);
-                });
+            test('Path User Pass ',async () => {
+                const res = await request(server).get(`${KeyTest.config.User}/${id}`).set('Authorization', `Bearer ${token}`);
+                expect(res.statusCode).toBe(200);
             });
         });
     });
@@ -97,31 +99,24 @@ describe('TEST USER FUNCTION  ', () => {
                 .send(KeyTest.DataPass.UserUpdate);
             expect(res.statusCode).toBe(200);
         });
-        describe('Path Fail',() =>{
-            test('Path User Fail ', async () => {
-                const res = await request(server).patch(`${KeyTest.config.User}/${id}`).set('Authorization', `Bearer ${token}`)
-                    .send(KeyTest.DataPass.UserUpdate);
-                expect(res.statusCode).toBe(200);
-            });
-            test('Path User Fail Email exist in DB', async () => {
-                const res = await request(server).patch(`${KeyTest.config.User}/${id}`).set('Authorization', `Bearer ${token}`)
-                    .send(KeyTest.DataPass.User);
-                expect(res.statusCode).toBe(400);
-            });
-            test('Path User Fail No login', async () => {
-                const res = await request(server).patch(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`).send(KeyTest.DataPass.UserUpdate);
-                expect(res.statusCode).toBe(404);
-            });
-            test('Path User Fail Role other Admin', async () => {
-                const res = await request(server).patch(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${tokenUser}`)
-                    .send(KeyTest.DataPass.UserUpdate);
-                expect(res.statusCode).toBe(403);
-            });
-            test('Path User Fail wrong Id', async () => {
-                const res = await request(server).patch(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${token}`)
-                    .send(KeyTest.DataPass.UserUpdate);
-                expect(res.statusCode).toBe(404);
-            });
+        test('Path User Fail Email exist in DB', async () => {
+            const res = await request(server).patch(`${KeyTest.config.User}/${id}`).set('Authorization', `Bearer ${token}`)
+                .send(KeyTest.DataPass.User);
+            expect(res.statusCode).toBe(400);
+        });
+        test('Path User Fail No login', async () => {
+            const res = await request(server).patch(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`).send(KeyTest.DataPass.UserUpdate);
+            expect(res.statusCode).toBe(401);
+        });
+        test('Path User Fail Role other Admin', async () => {
+            const res = await request(server).patch(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${tokenUser}`)
+                .send(KeyTest.DataPass.UserUpdate);
+            expect(res.statusCode).toBe(403);
+        });
+        test('Path User Fail wrong Id', async () => {
+            const res = await request(server).patch(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${token}`)
+                .send(KeyTest.DataPass.UserUpdate);
+            expect(res.statusCode).toBe(404);
         });
     });
     describe('Delete User function', () =>{
@@ -133,7 +128,7 @@ describe('TEST USER FUNCTION  ', () => {
             const res = await request(server).delete(`${KeyTest.config.User}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${token}`);
             expect(res.statusCode).toBe(404);
         });
-        test('Delete User Roles other Admin', async () => {
+        test('Delete User Roles other manager or user', async () => {
             const res = await request(server).delete(`${KeyTest.config.User}/${id}`).set('Authorization', `Bearer ${tokenUser}`);
             expect(res.statusCode).toBe(403);
         });

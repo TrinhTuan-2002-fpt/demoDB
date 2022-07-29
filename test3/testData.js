@@ -4,7 +4,7 @@ var mongoose = require('mongoose');
 const Ip = ['1.2.3.4.5','1234.1234','257.258.269.299','1995.-4.-5.9','A.1.2.3','1@3,5.6','1.27.2..','ipvtv'];
 const status = ['Draft', 'Release'];
 const roles = ["admin", "manager","user"];
-const types = ['Station', 'Charging', 'Waiting'];
+const types = ['Station ', 'Charging', 'Waiting'];
 
 const config = {
     Auth: {
@@ -23,8 +23,7 @@ const config = {
     Location: '/v1/locations',
     Car: '/v1/cars',
     Account: '/v1/account/',
-    AccPass: '/v1/account/password',
-    Application: '/v1/applications'
+    AccPass: '/v1/account/password'
 }
 const DataPass = {
     LoginFUllRoles: {
@@ -108,15 +107,7 @@ const DataPass = {
         title: 'Bến ' + Math.floor(Math.random() * 10),
         lat: faker.address.latitude(),
         lng: faker.address.longitude(),
-        atl: Math.random(),
-        type: types[Math.floor(Math.random() * types.length)]
-    },
-    LocationMap:{
-        status: status[Math.floor(Math.random() * status.length)],
-        title: 'Bến ' + Math.floor(Math.random() * 10),
-        lat: faker.address.latitude(),
-        lng: faker.address.longitude(),
-        atl: Math.random(),
+        alt: Math.random(),
         type: types[Math.floor(Math.random() * types.length)]
     },
     LocationUpdate:{
@@ -124,22 +115,13 @@ const DataPass = {
         title: 'Bến ' + Math.floor(Math.random() * 10),
         lat: faker.address.latitude(),
         lng: faker.address.longitude(),
-        atl: Math.random(),
+        alt: Math.random(),
         type: types[Math.floor(Math.random() * types.length)],
         description: 'Bến '+ Math.floor(Math.random() * 10) + ' ngược'
-    },
-    Application: {
-        name: faker.name.findName(),
-        weatherKey: '5da58e34d1e06109e64763cc669969a1'
-    },
-    ApplicationUpdate: {
-        name: faker.name.findName(),
-        weatherKey: '5da58e34d1e06109e64763cc669969a1'
     }
 }
 const DataFail = {
     ID: mongoose.Types.ObjectId().toString(),
-    IdNoFromat: '622aae867534b29927b85hus7',
     Emoji: faker.internet.emoji(),
     Null: null,
     ip: Ip[Math.floor(Math.random() * Ip.length)],
@@ -166,7 +148,7 @@ const DataFail = {
     Map:{
         LatString: 'lat' + faker.address.latitude(),
         LngString: 'lng' + faker.address.longitude(),
-        atl: 'atl' + Math.random()
+        alt: 'alt' + Math.random()
     }
 }
 module.exports = {
