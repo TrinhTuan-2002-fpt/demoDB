@@ -5,14 +5,14 @@ const config = require('../src/config/config');
 const KeyTest = require('./testData');
 const { Map } = require('../src/models');
 
-let token, id,tokenUser;
+let token, id,tokenLocation;
 let lstmap = [],location = {};
 beforeAll(async () => {
     await mongoose.connect(config.getDBUri(), config.DB.CONFIGS);
     await (await Map.find({})).forEach(x => {
         lstmap.push(x._id.toString());
     });
-    location = {...KeyTest.DataPass.Location,...{map: lstmap[Math.floor(Math.random() * lstmap.length)]}};
+    location = {...KeyTest.DataPass.Location,...{Location: lstmap[Math.floor(Math.random() * lstLocation.length)]}};
     const res = await request(server).post(KeyTest.config.Auth.Login).send(KeyTest.DataPass.LoginFUllRoles);
     token = res.body.token.access.token;
 });
@@ -22,28 +22,28 @@ afterAll(async () => {
   });
 describe('TEST LOPCATION FUNCATION ',() => {
     describe('Post Location ',() => {
-        test('POST Location Pass ',async () => {
+        test('POST Location Pass ',() => {
             const res = await request(server).post(KeyTest.config.Location).set('Authorization', `Bearer ${token}`)
             .send(location);
             id = res.body._id;
             expect(res.status).toEqual(201);
         });
-        test('Post Location Fail data null',async () => {
+        test('Post Location Fail data null',() => {
             const res = await request(server).post(KeyTest.config.Location).set('Authorization', `Bearer ${token}`)
             .send(KeyTest.DataFail.Null);
             expect(res.status).toEqual(400);
         }); 
-        test('Post Location Fail Location unregistered',async () => {
+        test('Post Location Fail Location unregistered',() => {
             const res = await request(server).post(KeyTest.config.Location).set('Authorization', `Bearer ${token}`)
-            .send({...KeyTest.DataPass.Location,...{map: KeyTest.DataFail.ID}});
-            expect(res.status).toEqual(400);
+            .send({...KeyTest.DataPass.Location,...{Location: KeyTest.DataFail.ID}});
+            expect(res.status).toEqual(404);
         }); 
-        test('Post Location the title exists Location in db',async () => {
+        test('Post Location the title exists Location in db',() => {
             const res = await request(server).post(KeyTest.config.Location).set('Authorization', `Bearer ${token}`)
             .send(location);
             expect(res.status).toEqual(400);
         });
-        test('Post Location Fail status other Draft, Release',async () => {
+        test('Post Location Fail status other Draft, Release',() => {
             const res = await request(server).post(KeyTest.config.Location).set('Authorization', `Bearer ${token}`)
             .send({
                 status: KeyTest.DataFail.Status,
@@ -52,11 +52,11 @@ describe('TEST LOPCATION FUNCATION ',() => {
                 lng: KeyTest.DataPass.Location.lng,
                 alt: KeyTest.DataPass.Location.alt,
                 type: KeyTest.DataPass.Location.type,
-                map: KeyTest.DataFail.ID
+                Location: KeyTest.DataFail.ID
             });
             expect(res.status).toEqual(400);
         }); 
-        test('Post Location Fail types other Station, Charging, Waiting',async () => {
+        test('Post Location Fail types other Station, Charging, Waiting',() => {
             const res = await request(server).post(KeyTest.config.Location).set('Authorization', `Bearer ${token}`)
             .send({
                 status: KeyTest.DataFail.Status,
@@ -65,33 +65,22 @@ describe('TEST LOPCATION FUNCATION ',() => {
                 lng: KeyTest.DataPass.Location.lng,
                 alt: KeyTest.DataPass.Location.alt,
                 type: KeyTest.DataFail.Status,
-                map: KeyTest.DataFail.ID
+                Location: KeyTest.DataFail.ID
             });
             expect(res.status).toEqual(400);
         }); 
-        test('Post Location Fail lat,lng or alt string exists letter',async () => {
+        test('Post Location Fail lat,lng or alt string exists letter',() => {
             const res = await request(server).post(KeyTest.config.Location).set('Authorization', `Bearer ${token}`)
             .send({
                 status: KeyTest.DataPass.Location.status,
                 title: KeyTest.DataPass.Location.title,
-                lat: KeyTest.DataFail.Map.LatString,
-                lng: KeyTest.DataFail.Map.LngString  ,
+                lat: KeyTest.DataFail.Location.LatString,
+                lng: KeyTest.DataFail.Location.LatString,
                 alt: KeyTest.DataFail.Location.alt,
                 type: KeyTest.DataPass.Location.type,
-                map: KeyTest.DataFail.ID
+                Location: KeyTest.DataFail.ID
             });
             expect(res.status).toEqual(400);
-        });
-        test('Post Location Fail Role User',async () => {
-            await request(server).post(KeyTest.config.Auth.Register).send(KeyTest.DataPass.LoginUser);
-            const LoginUser = await request(server).post(KeyTest.config.Auth.Login).send({
-                email: KeyTest.DataPass.LoginUser.email,
-                password: KeyTest.DataPass.LoginUser.password
-            });
-            tokenUser = LoginUser.body.token.access.token;
-            const res = await request(server).post(KeyTest.config.Maps).set('Authorization', `Bearer ${LoginUser.body.token.access.token}`)
-            .send(KeyTest.DataPass.Map);
-            expect(res.statusCode).toBe(403);
         });
     });
     describe('Get Location',() => {
@@ -100,6 +89,10 @@ describe('TEST LOPCATION FUNCATION ',() => {
             expect(res.type).toBe('application/json');
         });
         test('Get Location Fail wrong Id ',async () => {
+            const res = await request(server).get(`${KeyTest.config.Location}/${KeyTest.DataFail.ID}`);
+            expect(res.statusCode).toBe(200);
+        });
+        test('Path Location Fail wrong Id ',async () => {
             const res = await request(server).get(`${KeyTest.config.Location}/${KeyTest.DataFail.ID}`);
             expect(res.statusCode).toBe(200);
         });
@@ -125,7 +118,7 @@ describe('TEST LOPCATION FUNCATION ',() => {
             expect(res.statusCode).toBe(401);
         });
         test('Path Location Fail Role other Manager', async () => {
-            const res = await request(server).patch(`${KeyTest.config.Location}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${tokenUser}`)
+            const res = await request(server).patch(`${KeyTest.config.Location}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${tokenLocation}`)
                 .send(KeyTest.DataPass.LocationUpdate);
             expect(res.statusCode).toBe(403);
         });
@@ -145,7 +138,7 @@ describe('TEST LOPCATION FUNCATION ',() => {
             expect(res.statusCode).toBe(404);
         });
         test('Delete Location Roles other Admin', async () => {
-            const res = await request(server).delete(`${KeyTest.config.Location}/${id}`).set('Authorization', `Bearer ${tokenUser}`);
+            const res = await request(server).delete(`${KeyTest.config.Location}/${id}`).set('Authorization', `Bearer ${tokenLocation}`);
             expect(res.statusCode).toBe(403);
         });
         test('Delete Location No login', async () => {

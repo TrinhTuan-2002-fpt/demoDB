@@ -3,9 +3,9 @@ const mongoose = require('mongoose');
 const { server } = require('../src/app');
 const config = require('../src/config/config');
 const KeyTest = require('./testData');
-const { Location } = require('../src/models');
+const { Map } = require('../src/models');
 
-let token, id,tokenUser;
+let token, id,tokenMap;
 let lstLocation = [];
 beforeAll(async () => {
     await mongoose.connect(config.getDBUri(), config.DB.CONFIGS);
@@ -22,19 +22,18 @@ afterAll(async () => {
 describe('TEST MAP FUNCTION', () => {
     describe('Post Map function', () => {
         describe('Post Map Fail', () => {
-            test('Post Map Data Null',async () => {
+            test('Post Map Null',async () => {
                 const res = await request(server).post(KeyTest.config.Maps).set('Authorization', `Bearer ${token}`)
                 .send(KeyTest.Null);
                 expect(res.statusCode).toBe(400);
             });
 
-            test('Post Map Role Fail User or Admin',async () => {
+            test('Post Map Role User or Admin',async () => {
                 await request(server).post(KeyTest.config.Auth.Register).send(KeyTest.DataPass.LoginUser);
                 const LoginUser = await request(server).post(KeyTest.config.Auth.Login).send({
                     email: KeyTest.DataPass.LoginUser.email,
                     password: KeyTest.DataPass.LoginUser.password
                 });
-                tokenUser = LoginUser.body.token.access.token;
                 const res = await request(server).post(KeyTest.config.Maps).set('Authorization', `Bearer ${LoginUser.body.token.access.token}`)
                 .send(KeyTest.DataPass.Map);
                 expect(res.statusCode).toBe(403);
@@ -116,6 +115,24 @@ describe('TEST MAP FUNCTION', () => {
                 });
                 expect(res.statusCode).toBe(400);
             });
+            
+            test('Post Map Fail Map exist in DB', async () => {
+                await request(server).post(KeyTest.config.Auth.Register).set('Authorization', `Bearer ${token}`)
+                .send(KeyTest.DataPass.Map);
+                const res = await request(server).post(KeyTest.config.Auth.Register).set('Authorization', `Bearer ${token}`)
+                .send(KeyTest.DataPass.Map);
+                expect(res.statusCode).toBe(400);
+            });
+            test('Post Car Role user ',async () => {
+                const UserLogin = await request(server).post(KeyTest.config.Auth.Login).send({
+                    email: KeyTest.DataPass.LoginUser.email,
+                    password: KeyTest.DataPass.LoginUser.password
+                });
+                tokenMap = UserLogin.body.token.access.token;
+                const res = await request(server).post(KeyTest.config.Maps).set('Authorization', `Bearer ${UserLogin.body.token.access.token}`)
+                .send(KeyTest.DataPass.Map);
+                expect(res.statusCode).toBe(403);
+            });
         });
         describe('Post Map Pass', () => {
             test('Post Map test delete', async() => {
@@ -136,24 +153,27 @@ describe('TEST MAP FUNCTION', () => {
     describe('Get Map function', () => {
         test('Get Map All return json ',async () => {
             const res = await request(server).get(KeyTest.config.Maps);
-            expect(res.statusCode).toBe(200);  
             expect(res.type).toBe('application/json');
         });
         test('Get Map Fail wrong Id ',async () => {
             const res = await request(server).get(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`);
-            expect(res.statusCode).toBe(404);   
+            expect(res.statusCode).toBe(200);
+        });
+        test('Path Map Fail wrong Id ',async () => {
+            const res = await request(server).get(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`);
+            expect(res.statusCode).toBe(200);
         });
     });
     describe('Path Map function', () => {
-        test('Path Map Pass one location ', async () => {
+        test('Path Map Pass location ', async () => {
             const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
-                .send({...KeyTest.DataPass.Map,...{locations: lstLocation[Math.floor(Math.random() * lstLocation.length)]}});
+                .send({...KeyTest.DataPass.Map,...{locations: null}});
             expect(res.statusCode).toBe(401);
         });
         test('Path Map Pass location null', async () => {
             const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
                 .send({...KeyTest.DataPass.Map,...{locations: null}});
-            expect(res.statusCode).toBe(400);
+            expect(res.statusCode).toBe(401);
         });
         test('Path Map Pass location exist', async () => {
             const res = await request(server).patch(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${token}`)
@@ -170,7 +190,7 @@ describe('TEST MAP FUNCTION', () => {
             expect(res.statusCode).toBe(401);
         });
         test('Path Map Fail Role other Manager', async () => {
-            const res = await request(server).patch(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${tokenUser}`)
+            const res = await request(server).patch(`${KeyTest.config.Maps}/${KeyTest.DataFail.ID}`).set('Authorization', `Bearer ${tokenMap}`)
                 .send(KeyTest.DataPass.MapUpdate);
             expect(res.statusCode).toBe(403);
         });
@@ -190,7 +210,7 @@ describe('TEST MAP FUNCTION', () => {
             expect(res.statusCode).toBe(404);
         });
         test('Delete Map Roles other Admin', async () => {
-            const res = await request(server).delete(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${tokenUser}`);
+            const res = await request(server).delete(`${KeyTest.config.Maps}/${id}`).set('Authorization', `Bearer ${tokenMap}`);
             expect(res.statusCode).toBe(403);
         });
         test('Delete Map No login', async () => {
