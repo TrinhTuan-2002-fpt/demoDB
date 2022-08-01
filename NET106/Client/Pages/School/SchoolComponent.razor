@@ -1,0 +1,72 @@
+﻿@page "/schools"
+@using NET106.Shared.Models
+@inject HttpClient httpClient;
+@inject NavigationManager navigation;
+@inject JSRuntime JsRuntime;
+
+@if (Schools == null)
+{
+    <div>Loading...</div>
+}
+else
+{
+    <div>
+        <a class="btn btn-primary" href="create" >Create</a> 
+    </div>
+    <table class="table table-hover table-striped">
+        <thead>
+
+        <tr>
+            <th>Name</th>
+        </tr>
+        </thead>
+        <tbody>
+        @if (Schools != null && Schools.Count() > 0)
+        {
+            @foreach (var x in Schools)
+            {
+                <tr>
+                    <td>@x.Name</td>
+                    <td>
+                        <a class="btn btn-primary" href="Edit/@x.Id">Edit</a>
+                        <a type="button" class="btn btn-secondary" onclick="@(() => DeleteItem(x.Id))">Delete</a>
+                    </td>
+                </tr>
+            }
+        }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<School> Schools;
+    private bool show;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Schools = await httpClient.GetFromJsonAsync<List<School>>("/api/School");
+    }
+
+    private async Task DeleteItem(int id)
+    {
+        var response = await httpClient.DeleteAsync($"api/School/{id}");
+
+        if (response.StatusCode != System.Net.HttpStatusCode.NoContent) return;
+
+        var item = Schools.First(e => e.Id == id);
+        if (item != null)
+        {
+            Schools.Remove(item!);
+            navigation.NavigateTo("/schools");
+        }
+        StateHasChanged();
+    }
+
+    private void AuthMess()
+    {
+        if (!show)
+        {
+            JsRuntime.InvokeVoidAsync("alert", "Ban can dang nhap de su dung chhuc nang");
+        }
+    }
+}

@@ -1,0 +1,13 @@
+﻿@page "/register"
+@using NET106.Shared.ViewModels
+@inject HttpClient Http
+
+
+<button onclick="Test" class="btn btn-primary">Test</button>
+
+@code {
+    private async Task Test()
+    {
+        await Http.PostAsJsonAsync<RegisterModel>("api/courses", new RegisterModel());
+    }
+}

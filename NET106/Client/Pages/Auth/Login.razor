@@ -1,0 +1,40 @@
+﻿@page "/login"
+@using NET106.Shared.ViewModels
+@inject HttpClient Http
+@inject NavigationManager Navigator
+
+<PageTitle>Đăng nhập</PageTitle>
+
+<EditForm Model="@_request" method="post" OnValidSubmit="@SignIn">
+    <h3 class="text-center">Đăng nhập</h3>
+    @if(_showErr){
+        <p class="text-center text-danger">@_err</p>
+    }
+    <div class="mb-3">
+        <label>Email đăng nhập</label>
+        <input @bind-value="_request.Email" type="text" class="form-control"/>
+    </div>
+    <div class="mb-3">
+        <label>Mật khẩu</label>
+        <input @bind-value="_request.Password" type="password" class="form-control"/>
+    </div>
+    <div class="mb-3">
+        <button type="submit" class="btn btn-primary">Đăng nhập</button>
+    </div>
+</EditForm>
+
+@code {
+    private LoginViewModel _request = new();
+    private readonly string _err = "Sai tên tài khoản hoặc mật khẩu";
+    private bool _showErr = false;
+
+    private async Task SignIn()
+    {
+        var response = await Http.PostAsJsonAsync<LoginViewModel>("/api/auth/login", _request);
+
+        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            Navigator.NavigateTo("/");
+        else
+            _showErr = true;
+    }
+}

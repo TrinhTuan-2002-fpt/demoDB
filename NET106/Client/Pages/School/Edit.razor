@@ -1,0 +1,37 @@
+﻿@page "/Edit/{Id:int}"
+@using NET106.Shared.Models
+@inject HttpClient httpClient;
+@inject NavigationManager navigation;
+
+<EditForm Model="@schools" OnValidSubmit="@Submit" method="post">
+    <h3 class="text-center">Cập nhật</h3>
+    <div class="mb-3">
+        <label>Name</label>
+        <input type="text" class="form-control" @bind-value="schools.Name">
+    </div>
+    <button class="btn btn-success mt-3" type="submit">Update</button>
+</EditForm>
+
+@code {
+    private School schools = new School();
+
+    [Parameter]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await httpClient.GetFromJsonAsync<School>($"api/School/{Id}");
+        if (response == null) return;
+
+        schools.Id = response.Id;
+        schools.Name = response.Name;
+    }
+
+    private async Task Submit()
+    {
+        var response = await httpClient.PutAsJsonAsync($"api/School/{Id}", schools);
+    
+        if (response.StatusCode == System.Net.HttpStatusCode.NoContent)
+            navigation.NavigateTo("/schools");
+    }
+}

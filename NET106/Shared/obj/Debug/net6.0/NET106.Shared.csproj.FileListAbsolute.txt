@@ -1,0 +1,14 @@
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\bin\Debug\net6.0\NET106.Shared.deps.json
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\bin\Debug\net6.0\NET106.Shared.runtimeconfig.json
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\bin\Debug\net6.0\NET106.Shared.dll
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\bin\Debug\net6.0\NET106.Shared.pdb
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\NET106.Shared.csproj.AssemblyReference.cache
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\NET106.Shared.GeneratedMSBuildEditorConfig.editorconfig
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\NET106.Shared.AssemblyInfoInputs.cache
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\NET106.Shared.AssemblyInfo.cs
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\NET106.Shared.csproj.CoreCompileInputs.cache
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\NET106.Shared.dll
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\refint\NET106.Shared.dll
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\NET106.Shared.pdb
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\NET106.Shared.genruntimeconfig.cache
+E:\NET\C#6\Assignment-NET106\NewProjects\NET106\Shared\obj\Debug\net6.0\ref\NET106.Shared.dll

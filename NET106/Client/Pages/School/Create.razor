@@ -1,0 +1,29 @@
+﻿@page "/create"
+@using NET106.Shared.Models
+@inject HttpClient httpClient;
+@inject NavigationManager navigation;
+
+<EditForm OnValidSubmit="@Submit" Model="Schools" method="post">
+    <div class="form-group">
+        <label asp-for="Name" class="control-label">Name</label>
+        <input @bind-value="Schools.Name" class="form-control"/>
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <button class="btn btn-success mt-3" type="submit">Create</button>
+
+</EditForm>
+
+@code {
+    private School Schools = new School();
+
+    public async Task Submit()
+    {
+        var create = await httpClient.PostAsJsonAsync("/api/School", Schools);
+        if(create.IsSuccessStatusCode)
+        {
+            navigation.NavigateTo("/schools");
+        }
+    }
+    
+}
